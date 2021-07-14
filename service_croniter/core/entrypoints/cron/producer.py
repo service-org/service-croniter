@@ -91,7 +91,6 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         itr = croniter('* * * * * 1', **extension.cron_option)
         run and self.container.spawn_splits_thread(extension.handle_worker, tid=tid)
         nxt = None if run else itr.get_next()
-        from datetime import datetime
         while True:
             if self.stopped:
                 break
@@ -100,10 +99,6 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
                 nxt = itr.get_next()
                 self.container.spawn_splits_thread(extension.handle_worker, tid=tid)
                 continue
-            print('!' * 100)
-            print(now, nxt, now >= nxt)
-            print(datetime.fromtimestamp(now), datetime.fromtimestamp(nxt))
-            print('!' * 100)
             if now >= nxt:
                 nxt = None
-            time.sleep(1)
+            time.sleep(0.01)
