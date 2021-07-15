@@ -1,8 +1,8 @@
 # 运行环境
 
-| python | system| 
-| :------| :-----|      
-| 3.9.16 | any os|
+|system |python | 
+|:------|:------|      
+|cross platform |3.9.16|
 
 # 组件安装
 
@@ -81,4 +81,4 @@ app = Service()
 
 # 远程调试
 
-> service debug --port <backdoor-port>
+> service debug --port <port>
