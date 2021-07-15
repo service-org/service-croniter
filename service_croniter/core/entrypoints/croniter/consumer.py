@@ -92,7 +92,7 @@ class CronConsumer(BaseEntrypoint):
         """
         return results
 
-    def handle_errors(self, context: WorkerContext, excinfo: t.Any) -> t.Any:
+    def handle_errors(self, context: WorkerContext, excinfo: t.Tuple) -> t.Any:
         """ 处理异常结果
 
         @param context: 上下文对象
