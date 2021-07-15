@@ -13,10 +13,10 @@ from service_core.core.service.entrypoint import BaseEntrypoint
 from .producer import CronProducer
 
 
-class CronHandlers(BaseEntrypoint):
-    """ 定时任务处理类 """
+class CronConsumer(BaseEntrypoint):
+    """ 定时任务消费者类 """
 
-    name = 'cron-handlers'
+    name = 'CronConsumer'
 
     producer = CronProducer()
 
@@ -30,7 +30,7 @@ class CronHandlers(BaseEntrypoint):
         self.exec_atonce = exec_atonce
         self.expr_format = expr_format
         self.cron_option = cron_option
-        super(CronHandlers, self).__init__(expr_format, exec_atonce=exec_atonce, **cron_option)
+        super(CronConsumer, self).__init__()
 
     def setup(self) -> None:
         """ 生命周期 - 载入阶段
@@ -64,13 +64,13 @@ class CronHandlers(BaseEntrypoint):
         context, excinfo, results = gt.wait()
         event.send((context, excinfo, results))
 
-    def handle_worker(self) -> t.Any:
+    def handle_request(self) -> t.Tuple:
         """ 处理工作请求
 
-        @return: t.Any
+        @return: t.Tuple
         """
         event = Event()
-        tid = 'create_croniter_worker_thread'
+        tid = f'{self.name}.self_handle_request'
         gt = self.container.spawn_worker_thread(self, tid=tid)
         gt.link(self._link_results, event)
         context, excinfo, results = event.wait()

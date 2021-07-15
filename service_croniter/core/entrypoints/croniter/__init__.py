@@ -4,6 +4,6 @@
 
 from __future__ import annotations
 
-from .handlers import CronHandlers
+from .consumer import CronConsumer
 
-cron = CronHandlers.as_decorators
+cron = CronConsumer.as_decorators

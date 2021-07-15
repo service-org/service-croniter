@@ -26,8 +26,5 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.9',
     ],
-    install_requires=['service-core', 'croniter==1.0.15'],
-    entry_points={
-        'console_scripts': ['service=service_core.cli.main:main']
-    }
+    install_requires=['service-core', 'croniter==1.0.15']
 )
