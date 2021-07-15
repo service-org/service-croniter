@@ -6,6 +6,9 @@ from __future__ import annotations
 
 import typing as t
 
+if t.TYPE_CHECKING:
+    from service_core.core.context import WorkerContext
+
 from eventlet.event import Event
 from eventlet.greenthread import GreenThread
 from service_core.core.service.entrypoint import BaseEntrypoint
@@ -80,16 +83,21 @@ class CronConsumer(BaseEntrypoint):
             self.handle_errors(context, excinfo)
         )
 
-    def handle_result(self, context, results) -> t.Any:
+    def handle_result(self, context: WorkerContext, results: t.Any) -> t.Any:
         """ 处理正常结果
 
+        @param context: 上下文对象
+        @param results: 结果对象
         @return: t.Any
         """
         return results
 
-    def handle_errors(self, context, exc_info) -> t.Any:
+    def handle_errors(self, context: WorkerContext, excinfo: t.Any) -> t.Any:
         """ 处理异常结果
 
+        @param context: 上下文对象
+        @param excinfo: 异常对象
         @return: t.Any
         """
-        return exc_info
+        return excinfo
+
