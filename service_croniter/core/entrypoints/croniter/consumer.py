@@ -6,12 +6,12 @@ from __future__ import annotations
 
 import typing as t
 
-if t.TYPE_CHECKING:
-    from service_core.core.context import WorkerContext
-
 from eventlet.event import Event
 from eventlet.greenthread import GreenThread
 from service_core.core.service.entrypoint import BaseEntrypoint
+
+if t.TYPE_CHECKING:
+    from service_core.core.context import WorkerContext
 
 from .producer import CronProducer
 
@@ -100,4 +100,3 @@ class CronConsumer(BaseEntrypoint):
         @return: t.Any
         """
         return excinfo
-

@@ -7,12 +7,6 @@ from __future__ import annotations
 import eventlet
 import typing as t
 
-if t.TYPE_CHECKING:
-    from service_core.core.service.entrypoint import BaseEntrypoint
-
-    # 入口类型
-    Entrypoint = t.TypeVar('Entrypoint', bound=BaseEntrypoint)
-
 from datetime import datetime
 from logging import getLogger
 from croniter import croniter
@@ -23,6 +17,13 @@ from service_core.core.spawning import SpawningProxy
 from service_core.core.decorator import AsFriendlyFunc
 from service_core.core.service.extension import ShareExtension
 from service_core.core.service.extension import StoreExtension
+
+if t.TYPE_CHECKING:
+    from service_core.core.service.entrypoint import BaseEntrypoint
+
+    # 入口类型
+    Entrypoint = t.TypeVar('Entrypoint', bound=BaseEntrypoint)
+
 from service_core.core.service.entrypoint import BaseEntrypoint
 
 logger = getLogger(__name__)
