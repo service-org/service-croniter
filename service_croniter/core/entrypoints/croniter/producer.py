@@ -80,7 +80,7 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         @return: GreenThread
         """
         func = self.timer
-        args, kwargs, tid = (extension,), {}, f'{self.name}.self_timer'
+        args, kwargs, tid = (extension,), {}, f'{self}.self_timer'
         return self.container.spawn_splits_thread(func, args, kwargs, tid=tid)
 
     def timer(self, extension: Entrypoint) -> None:
@@ -89,7 +89,7 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         @param extension: 入口对象
         @return: None
         """
-        tid = f'{self.name}.consumer_handle_request'
+        tid = f'{self}.consumer_handle_request'
         cron_option = extension.cron_option
         expr_format = extension.expr_format
         exec_atonce = extension.exec_atonce

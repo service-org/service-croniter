@@ -73,7 +73,7 @@ class CronConsumer(BaseEntrypoint):
         @return: t.Tuple
         """
         event = Event()
-        tid = f'{self.name}.self_handle_request'
+        tid = f'{self}.self_handle_request'
         gt = self.container.spawn_worker_thread(self, tid=tid)
         gt.link(self._link_results, event)
         context, excinfo, results = event.wait()
