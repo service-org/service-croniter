@@ -64,8 +64,8 @@ class CronConsumer(BaseEntrypoint):
         @param event: 事件
         @return: None
         """
-        context, excinfo, results = gt.wait()
-        event.send((context, excinfo, results))
+        context, results, excinfo = gt.wait()
+        event.send((context, results, excinfo))
 
     def handle_request(self) -> t.Tuple:
         """ 处理工作请求
@@ -76,7 +76,7 @@ class CronConsumer(BaseEntrypoint):
         tid = f'{self}.self_handle_request'
         gt = self.container.spawn_worker_thread(self, tid=tid)
         gt.link(self._link_results, event)
-        context, excinfo, results = event.wait()
+        context, results, excinfo = event.wait()
         return (
             self.handle_result(context, results)
             if excinfo is None else
