@@ -104,14 +104,19 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
             exec_nxtime = None
             self.container.spawn_splits_thread(extension.handle_request, tid=tid)
         while True:
-            if self.stopped:
+            try:
+                if self.stopped:
+                    break
+                if exec_nxtime is None:
+                    exec_nxtime = time_control.get_next()
+                    exec_dttime = datetime.fromtimestamp(exec_nxtime)
+                    self.container.spawn_splits_thread(extension.handle_request, tid=tid)
+                    logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
+                    continue
+                if time.time() >= exec_nxtime:
+                    exec_nxtime = None
+                eventlet.sleep(0.01)
+            except (KeyboardInterrupt, SystemExit, GreenletExit):
                 break
-            if exec_nxtime is None:
-                exec_nxtime = time_control.get_next()
-                exec_dttime = datetime.fromtimestamp(exec_nxtime)
-                self.container.spawn_splits_thread(extension.handle_request, tid=tid)
-                logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
-                continue
-            if time.time() >= exec_nxtime:
-                exec_nxtime = None
-            eventlet.sleep(0.01)
+            except:
+                logger.error(f'unexpected error while timer spawn', exc_info=True)
