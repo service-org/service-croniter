@@ -81,4 +81,4 @@ app = Server()
 
 # 远程调试
 
-> core debug --port <port>
+> core debug --host `127.0.0.1` --port `port`
