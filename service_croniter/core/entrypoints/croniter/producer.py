@@ -7,8 +7,8 @@ from __future__ import annotations
 import eventlet
 import typing as t
 
-from datetime import datetime
 from logging import getLogger
+from datetime import datetime
 from croniter import croniter
 from eventlet.green import time
 from greenlet import GreenletExit
@@ -37,7 +37,6 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
         self.stopped = False
 
         Entrypoint.__init__(self, *args, **kwargs)
-
         ShareExtension.__init__(self, *args, **kwargs)
         StoreExtension.__init__(self, *args, **kwargs)
 
@@ -86,37 +85,25 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
         @param extension: 入口对象
         @return: None
         """
+        exec_nxtime = None
         tid = f'{self}.consumer_handle_request'
         cron_option = extension.cron_option
         expr_format = extension.expr_format
-        exec_atonce = extension.exec_atonce
         cron_option.setdefault('start_time', time.time())
         time_control = croniter(expr_format, **cron_option)
-        exec_nxtime = None
-        if not exec_atonce:
-            # 如果不立即执行则计算下次执行时间,默认为时间戳
-            exec_nxtime = time_control.get_next()
-            exec_dttime = datetime.fromtimestamp(exec_nxtime)
-            logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
-        else:
-            # 否则立即提交任务执行CronConsumer修饰的方法
-            self.container.spawn_splits_thread(extension.handle_request, tid=tid)
-        while True:
+        while not self.stopped:
             try:
-                if self.stopped:
-                    break
-                # 如果下次执行时间存在且达到执行时间则重置exec_nxtime
-                if exec_nxtime and time.time() >= exec_nxtime:
-                    exec_nxtime = None
-                    continue
-                # exec_nxtime被重置表示需要立即提交任务给eventlet-hub
+                # 当下次执行时间为None则说明首次运行,立即计算下次执行时间
                 if exec_nxtime is None:
                     exec_nxtime = time_control.get_next()
                     exec_dttime = datetime.fromtimestamp(exec_nxtime)
+                    mesg = f'{self.container.service.name}:{tid} next run at {exec_dttime}'
+                    logger.debug(mesg)
+                # 当当前时间大于等于预计算的下次执行时间则立即提交任务给hub
+                if time.time() >= exec_nxtime:
                     self.container.spawn_splits_thread(extension.handle_request, tid=tid)
-                    logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
-                    continue
-                eventlet.sleep(0.01)
+                    exec_nxtime = None
+                eventlet.sleep(0.0001)
                 # 优雅处理如ctrl + c, sys.exit, kill thread时的异常
             except (KeyboardInterrupt, SystemExit, GreenletExit):
                 break

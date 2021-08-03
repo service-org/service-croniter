@@ -4,14 +4,19 @@
 
 from __future__ import annotations
 
+import sys
+import eventlet
 import typing as t
 
+from logging import getLogger
 from eventlet.event import Event
 from eventlet.greenthread import GreenThread
 from service_core.core.context import WorkerContext
 from service_core.core.service.entrypoint import Entrypoint
 
 from .producer import CronProducer
+
+logger = getLogger(__name__)
 
 
 class CronConsumer(Entrypoint):
@@ -21,15 +26,13 @@ class CronConsumer(Entrypoint):
 
     producer = CronProducer()
 
-    def __init__(self, expr_format: t.Text, exec_atonce: bool = False, **cron_option: t.Any) -> None:
+    def __init__(self, expr_format: t.Text, **cron_option: t.Any) -> None:
         """ 初始化实例
 
         @param expr_format: 时间表达式
-        @param exec_atonce: 立即执行 ?
         @param cron_option: 其它的选项
         """
         self.expr_format = expr_format
-        self.exec_atonce = exec_atonce
         self.cron_option = cron_option
         super(CronConsumer, self).__init__()
 
@@ -62,7 +65,12 @@ class CronConsumer(Entrypoint):
         @param event: 事件
         @return: None
         """
-        context, results, excinfo = gt.wait()
+        # fix: 此协程异常会导致收不到event最终内存溢出!
+        try:
+            context, results, excinfo = gt.wait()
+        except Exception:
+            results, excinfo = None, sys.exc_info()
+            context = eventlet.getcurrent().context
         event.send((context, results, excinfo))
 
     def handle_request(self) -> t.Tuple:
@@ -74,6 +82,7 @@ class CronConsumer(Entrypoint):
         tid = f'{self}.self_handle_request'
         gt = self.container.spawn_worker_thread(self, tid=tid)
         gt.link(self._link_results, event)
+        # 注意: 协程异常会导致收不到event最终内存溢出!
         context, results, excinfo = event.wait()
         return (
             self.handle_result(context, results)
