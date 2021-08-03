@@ -32,13 +32,13 @@ from __future__ import annotations
 import typing as t
 
 from logging import getLogger
+from service_core.core.service import Service
 from service_croniter.core.entrypoints import croniter
-from service_core.core.service.base import BaseService
 
 logger = getLogger(__name__)
 
 
-class Service(BaseService):
+class Server(Service):
     """ 基础服务类 """
 
     # 微服务名称
@@ -50,7 +50,7 @@ class Service(BaseService):
         # 此服务无需启动监听端口, 请初始化掉下面参数
         self.host = ''
         self.port = 0
-        super(Service, self).__init__(*args, **kwargs)
+        super(Server, self).__init__(*args, **kwargs)
 
     @croniter.cron('* * * * * */1', exec_atonce=True)
     def test_croniter_every_second_with_exec_atonce(self) -> None:
@@ -70,15 +70,15 @@ class Service(BaseService):
 
 from __future__ import annotations
 
-from project import Service
+from project import Server
 
-app = Service()
+app = Server()
 ```
 
 # 运行服务
 
-> service start facade --debug
+> core start facade --debug
 
 # 远程调试
 
-> service debug --port <port>
+> core debug --port <port>

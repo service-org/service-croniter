@@ -8,15 +8,13 @@ import typing as t
 
 from eventlet.event import Event
 from eventlet.greenthread import GreenThread
-from service_core.core.service.entrypoint import BaseEntrypoint
-
-if t.TYPE_CHECKING:
-    from service_core.core.context import WorkerContext
+from service_core.core.context import WorkerContext
+from service_core.core.service.entrypoint import Entrypoint
 
 from .producer import CronProducer
 
 
-class CronConsumer(BaseEntrypoint):
+class CronConsumer(Entrypoint):
     """ 定时任务消费者类 """
 
     name = 'CronConsumer'
@@ -30,8 +28,8 @@ class CronConsumer(BaseEntrypoint):
         @param exec_atonce: 立即执行 ?
         @param cron_option: 其它的选项
         """
-        self.exec_atonce = exec_atonce
         self.expr_format = expr_format
+        self.exec_atonce = exec_atonce
         self.cron_option = cron_option
         super(CronConsumer, self).__init__()
 
@@ -58,7 +56,7 @@ class CronConsumer(BaseEntrypoint):
 
     @staticmethod
     def _link_results(gt: GreenThread, event: Event) -> None:
-        """ 连接执行结果
+        """ 等待执行结果
 
         @param gt: 协程对象
         @param event: 事件
@@ -90,7 +88,7 @@ class CronConsumer(BaseEntrypoint):
         @param results: 结果对象
         @return: t.Any
         """
-        return results
+        pass
 
     def handle_errors(self, context: WorkerContext, excinfo: t.Tuple) -> t.Any:
         """ 处理异常结果
@@ -99,4 +97,4 @@ class CronConsumer(BaseEntrypoint):
         @param excinfo: 异常对象
         @return: t.Any
         """
-        return excinfo
+        pass

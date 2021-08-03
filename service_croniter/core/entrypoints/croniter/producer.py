@@ -15,21 +15,14 @@ from greenlet import GreenletExit
 from eventlet.greenthread import GreenThread
 from service_core.core.spawning import SpawningProxy
 from service_core.core.decorator import AsFriendlyFunc
+from service_core.core.service.entrypoint import Entrypoint
 from service_core.core.service.extension import ShareExtension
 from service_core.core.service.extension import StoreExtension
-
-if t.TYPE_CHECKING:
-    from service_core.core.service.entrypoint import BaseEntrypoint
-
-    # 入口类型
-    Entrypoint = t.TypeVar('Entrypoint', bound=BaseEntrypoint)
-
-from service_core.core.service.entrypoint import BaseEntrypoint
 
 logger = getLogger(__name__)
 
 
-class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
+class CronProducer(Entrypoint, ShareExtension, StoreExtension):
     """ 定时任务生产者类 """
 
     name = 'CronProducer'
@@ -43,7 +36,8 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         self.gt_list = []
         self.stopped = False
 
-        BaseEntrypoint.__init__(self, *args, **kwargs)
+        Entrypoint.__init__(self, *args, **kwargs)
+
         ShareExtension.__init__(self, *args, **kwargs)
         StoreExtension.__init__(self, *args, **kwargs)
 
@@ -61,7 +55,8 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         """
         self.stopped = True
         base_func = SpawningProxy(self.gt_list).wait
-        wait_func = AsFriendlyFunc(base_func, all_exception=(GreenletExit,))
+        exception = (GreenletExit,)
+        wait_func = AsFriendlyFunc(base_func, all_exception=exception)
         wait_func()
 
     def kill(self) -> None:
@@ -71,7 +66,8 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         """
         self.stopped = True
         base_func = SpawningProxy(self.gt_list).kill
-        kill_func = AsFriendlyFunc(base_func, all_exception=(GreenletExit,))
+        exception = (GreenletExit,)
+        kill_func = AsFriendlyFunc(base_func, all_exception=exception)
         kill_func()
 
     def spawn_timer_thread(self, extension: Entrypoint) -> GreenThread:
@@ -96,27 +92,35 @@ class CronProducer(BaseEntrypoint, ShareExtension, StoreExtension):
         exec_atonce = extension.exec_atonce
         cron_option.setdefault('start_time', time.time())
         time_control = croniter(expr_format, **cron_option)
+        exec_nxtime = None
         if not exec_atonce:
+            # 如果不立即执行则计算下次执行时间,默认为时间戳
             exec_nxtime = time_control.get_next()
             exec_dttime = datetime.fromtimestamp(exec_nxtime)
             logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
         else:
-            exec_nxtime = None
+            # 否则立即提交任务执行CronConsumer修饰的方法
             self.container.spawn_splits_thread(extension.handle_request, tid=tid)
         while True:
             try:
                 if self.stopped:
                     break
+                # 如果下次执行时间存在且达到执行时间则重置exec_nxtime
+                if exec_nxtime and time.time() >= exec_nxtime:
+                    exec_nxtime = None
+                    continue
+                # exec_nxtime被重置表示需要立即提交任务给eventlet-hub
                 if exec_nxtime is None:
                     exec_nxtime = time_control.get_next()
                     exec_dttime = datetime.fromtimestamp(exec_nxtime)
                     self.container.spawn_splits_thread(extension.handle_request, tid=tid)
                     logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
                     continue
-                if time.time() >= exec_nxtime:
-                    exec_nxtime = None
                 eventlet.sleep(0.01)
+                # 优雅处理如ctrl + c, sys.exit, kill thread时的异常
             except (KeyboardInterrupt, SystemExit, GreenletExit):
                 break
             except:
+                # 应该避免其它未知异常中断当前计时器导致定时任务无法被调度
                 logger.error(f'unexpected error while timer spawn', exc_info=True)
+        logger.debug(f'{self}.self_timer has been graceful stopped')
