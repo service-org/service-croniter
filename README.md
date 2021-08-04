@@ -39,7 +39,7 @@ logger = getLogger(__name__)
 
 
 class Server(Service):
-    """ 基础服务类 """
+    """ 微服务类 """
 
     # 微服务名称
     name = 'croniter'
