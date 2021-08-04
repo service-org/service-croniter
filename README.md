@@ -14,10 +14,6 @@ pip install -U service-croniter
 
 > config.yaml
 
-```yaml
-
-```
-
 # 基础案例
 
 > project.py
@@ -79,6 +75,10 @@ app = Server()
 
 > core start facade --debug
 
-# 远程调试
+# 接口调试
+
+> core shell --shell `shell`
+
+# 运行调试
 
 > core debug --port `port`
