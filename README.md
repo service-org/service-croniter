@@ -14,7 +14,7 @@ pip install -U service-croniter
 
 > config.yaml
 
-# 基础案例
+# 入门案例
 
 > project.py
 
