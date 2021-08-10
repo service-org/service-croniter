@@ -26,7 +26,7 @@ class CronConsumer(Entrypoint):
 
     producer = CronProducer()
 
-    def __init__(self, expr_format: t.Text, **cron_option: t.Any) -> None:
+    def __init__(self, expr_format: t.Text, **cron_option: t.Text) -> None:
         """ 初始化实例
 
         @param expr_format: 时间表达式
