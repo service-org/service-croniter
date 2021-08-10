@@ -103,7 +103,7 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
                 if time.time() >= exec_nxtime:
                     self.container.spawn_splits_thread(extension.handle_request, tid=tid)
                     exec_nxtime = None
-                eventlet.sleep(0.0001)
+                eventlet.sleep(0.1)
                 # 优雅处理如ctrl + c, sys.exit, kill thread时的异常
             except (KeyboardInterrupt, SystemExit, GreenletExit):
                 break
