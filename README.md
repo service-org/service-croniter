@@ -16,7 +16,15 @@ pip install -U service-croniter
 
 # 入门案例
 
-> project.py
+```yaml
+- config.yaml
+- facade.py
+- project
+  - __init__.py
+  - service.py
+```
+
+> service.py
 
 ```python
 #! -*- coding: utf-8 -*-
