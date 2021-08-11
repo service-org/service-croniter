@@ -30,7 +30,7 @@ class CronConsumer(Entrypoint):
             self,
             expr_format: t.Text,
             *,
-            cron_option: t.Optional[t.Dict[t.Text, t.Any]],
+            cron_option: t.Optional[t.Dict[t.Text, t.Any]] = None,
             **kwargs: t.Text
     ) -> None:
         """ 初始化实例
