@@ -26,14 +26,20 @@ class CronConsumer(Entrypoint):
 
     producer = CronProducer()
 
-    def __init__(self, expr_format: t.Text, *, cron_option: t.Dict[t.Text, t.Any], **kwargs: t.Text) -> None:
+    def __init__(
+            self,
+            expr_format: t.Text,
+            *,
+            cron_option: t.Optional[t.Dict[t.Text, t.Any]],
+            **kwargs: t.Text
+    ) -> None:
         """ 初始化实例
 
         @param expr_format: 时间表达式
         @param cron_option: 其它的选项
         """
         self.expr_format = expr_format
-        self.cron_option = cron_option
+        self.cron_option = cron_option or {}
         super(CronConsumer, self).__init__(**kwargs)
 
     def setup(self) -> None:
