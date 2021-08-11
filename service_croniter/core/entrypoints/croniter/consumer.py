@@ -26,7 +26,7 @@ class CronConsumer(Entrypoint):
 
     producer = CronProducer()
 
-    def __init__(self, expr_format: t.Text, **cron_option: t.Text) -> None:
+    def __init__(self, expr_format: t.Text, *, cron_option: t.Dict[t.Text, t.Any], **kwargs: t.Text) -> None:
         """ 初始化实例
 
         @param expr_format: 时间表达式
@@ -34,7 +34,7 @@ class CronConsumer(Entrypoint):
         """
         self.expr_format = expr_format
         self.cron_option = cron_option
-        super(CronConsumer, self).__init__()
+        super(CronConsumer, self).__init__(**kwargs)
 
     def setup(self) -> None:
         """ 生命周期 - 载入阶段

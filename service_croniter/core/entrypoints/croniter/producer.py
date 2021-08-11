@@ -96,6 +96,8 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
                 # 当下次执行时间为None则说明首次运行,立即计算下次执行时间
                 if exec_nxtime is None:
                     exec_nxtime = time_control.get_next()
+                    # 动态设置当前协程执行限时,防止生成的子协程驻留内存溢出
+                    extension.exec_timing = exec_nxtime - time.time()
                     exec_dttime = datetime.fromtimestamp(exec_nxtime)
                     mesg = f'{self.container.service.name}:{tid} next run at {exec_dttime}'
                     logger.debug(mesg)
