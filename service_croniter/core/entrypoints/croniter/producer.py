@@ -52,11 +52,7 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
 
         @return: None
         """
-        self.stopped = True
-        base_func = SpawningProxy(self.gt_list).wait
-        exception = (GreenletExit,)
-        wait_func = AsFriendlyFunc(base_func, all_exception=exception)
-        wait_func()
+        self.kill()
 
     def kill(self) -> None:
         """ 生命周期 - 强杀阶段
