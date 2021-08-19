@@ -63,7 +63,7 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
         base_func = SpawningProxy(self.gt_list).kill
         exception = (GreenletExit,)
         kill_func = AsFriendlyFunc(base_func, all_exception=exception)
-        kill_func()
+        self.gt_list and kill_func()
 
     def spawn_timer_thread(self, extension: Entrypoint) -> GreenThread:
         """ 创建一个计时器协程
