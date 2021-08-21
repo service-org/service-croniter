@@ -12,6 +12,7 @@ from logging import getLogger
 from eventlet.event import Event
 from eventlet.greenthread import GreenThread
 from service_core.core.context import WorkerContext
+from service_croniter.constants import CRONITER_CONFIG_KEY
 from service_core.core.service.entrypoint import Entrypoint
 
 from .producer import CronProducer
@@ -29,6 +30,7 @@ class CronConsumer(Entrypoint):
     def __init__(
             self,
             expr_format: t.Text,
+            crontab_options: t.Dict[t.Dict[t.Text, t.Any]] = None,
             **kwargs: t.Text
     ) -> None:
         """ 初始化实例
@@ -37,7 +39,7 @@ class CronConsumer(Entrypoint):
         @param cron_options: 计划配置
         """
         self.expr_format = expr_format
-        self.cron_options = kwargs.get('cron_options', {})
+        self.crontab_options = crontab_options or {}
         super(CronConsumer, self).__init__(**kwargs)
 
     def setup(self) -> None:
@@ -45,6 +47,9 @@ class CronConsumer(Entrypoint):
 
         @return: None
         """
+        config = self.container.config.get(f'{CRONITER_CONFIG_KEY}', default={})
+        # 防止YAML中声明值为None
+        self.crontab_options = (config or {}) | self.crontab_options
         self.producer.reg_extension(self)
 
     def stop(self) -> None:
