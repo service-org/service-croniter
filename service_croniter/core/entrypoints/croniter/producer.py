@@ -83,10 +83,10 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
         """
         exec_nxtime = None
         tid = f'{self}.consumer_handle_request'
-        cron_option = extension.cron_option
         expr_format = extension.expr_format
-        cron_option.setdefault('start_time', time.time())
-        time_control = croniter(expr_format, **cron_option)
+        cron_options = extension.cron_options
+        cron_options.setdefault('start_time', time.time())
+        time_control = croniter(expr_format, **cron_options)
         while not self.stopped:
             try:
                 # 当下次执行时间为None则说明首次运行,立即计算下次执行时间
