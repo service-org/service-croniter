@@ -47,9 +47,9 @@ class CronConsumer(Entrypoint):
 
         @return: None
         """
-        config = self.container.config.get(f'{CRONITER_CONFIG_KEY}', default={})
+        crontab_options = self.container.config.get(f'{CRONITER_CONFIG_KEY}.crontab_options', default={})
         # 防止YAML中声明值为None
-        self.crontab_options = (config or {}) | self.crontab_options
+        self.crontab_options = (crontab_options or {}) | self.crontab_options
         self.producer.reg_extension(self)
 
     def stop(self) -> None:
