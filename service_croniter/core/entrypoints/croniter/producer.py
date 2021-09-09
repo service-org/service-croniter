@@ -96,11 +96,12 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
                     mesg = f'{self.container.service.name}:{tid} next run at {exec_dttime}'
                     logger.debug(mesg)
                 # 动态设置当前协程执行限时,防止生成的子协程驻留内存溢出
-                exec_timing = exec_nxtime - time.time()
-                extension.exec_timing = 1 if exec_timing < 1 else exec_timing
+                # exec_timing = exec_nxtime - time.time()
+                # extension.exec_timing = 1 if exec_timing < 1 else exec_timing
                 # 当当前时间大于等于预计算的下次执行时间则立即提交任务给hub
                 if time.time() >= exec_nxtime:
-                    self.container.spawn_splits_thread(extension.handle_request, tid=tid)
+                    extension.handle_request()
+                    # self.container.spawn_splits_thread(extension.handle_request, tid=tid).wait()
                     exec_nxtime = None
                 eventlet.sleep(0.1)
                 # 优雅处理如ctrl + c, sys.exit, kill thread时的异常
