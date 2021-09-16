@@ -31,7 +31,7 @@ class CronConsumer(Entrypoint):
             self,
             expr_format: t.Text,
             crontab_options: t.Dict[t.Dict[t.Text, t.Any]] = None,
-            **kwargs: t.Text
+            **kwargs: t.Any
     ) -> None:
         """ 初始化实例
 
