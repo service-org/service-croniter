@@ -85,12 +85,12 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
         tid = f'{self}.consumer_handle_request'
         expr_format = extension.expr_format
         crontab_options = extension.crontab_options
-        crontab_options.setdefault('start_time', time.time())
-        time_control = croniter(expr_format, **crontab_options)
         while not self.stopped:
             try:
                 # 当下次执行时间为None则说明首次运行,立即计算下次执行时间
                 if exec_nxtime is None:
+                    crontab_options.setdefault('start_time', time.time())
+                    time_control = croniter(expr_format, **crontab_options)
                     exec_nxtime = time_control.get_next()
                     exec_dttime = datetime.fromtimestamp(exec_nxtime)
                     mesg = f'{self.container.service.name}:{tid} next run at {exec_dttime}'
@@ -100,7 +100,7 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
                 extension.exec_timing = None if exec_timing < 1 else exec_timing
                 # 当当前时间大于等于预计算的下次执行时间则立即提交任务给hub
                 if time.time() >= exec_nxtime:
-                    self.container.spawn_splits_thread(extension.handle_request, tid=tid).wait()
+                    extension.handle_request()
                     exec_nxtime = None
                 eventlet.sleep(0.1)
                 # 优雅处理如ctrl + c, sys.exit, kill thread时的异常

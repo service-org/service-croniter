@@ -36,7 +36,7 @@ class CronConsumer(Entrypoint):
         """ 初始化实例
 
         @param expr_format: 时间表达式
-        @param cron_options: 计划配置
+        @param crontab_options: 计划配置
         """
         self.expr_format = expr_format
         self.crontab_options = crontab_options or {}
