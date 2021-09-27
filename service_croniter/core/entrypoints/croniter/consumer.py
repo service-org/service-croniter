@@ -40,7 +40,7 @@ class CronConsumer(Entrypoint):
         """
         super(CronConsumer, self).__init__(**kwargs)
         self.expr_format = expr_format
-        self.exec_timing = None
+        kwargs.setdefault('exec_timing', None)
         self.crontab_options = crontab_options or {}
 
     def setup(self) -> None:
