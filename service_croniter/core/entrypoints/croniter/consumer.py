@@ -38,9 +38,10 @@ class CronConsumer(Entrypoint):
         @param expr_format: 时间表达式
         @param crontab_options: 计划配置
         """
-        self.expr_format = expr_format
-        self.crontab_options = crontab_options or {}
         super(CronConsumer, self).__init__(**kwargs)
+        self.expr_format = expr_format
+        self.exec_timing = None
+        self.crontab_options = crontab_options or {}
 
     def setup(self) -> None:
         """ 生命周期 - 载入阶段
