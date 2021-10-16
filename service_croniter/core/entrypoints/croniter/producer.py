@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import pytz
 import eventlet
 import typing as t
 
@@ -84,18 +85,22 @@ class CronProducer(Entrypoint, ShareExtension, StoreExtension):
         exec_nxtime = None
         tid = f'{self}.consumer_handle_request'
         expr_format = extension.expr_format
+        timezone = pytz.timezone(extension.timezone)
         crontab_options = extension.crontab_options
-        crontab_options.setdefault('start_time', time.time())
+        start_time = timezone.localize(datetime.now())
+        crontab_options.setdefault('start_time', start_time)
         time_control = croniter(expr_format, **crontab_options)
         while not self.stopped:
             try:
                 # 当下次执行时间为None则说明首次运行,立即计算下次执行时间
-                if exec_nxtime is None: exec_nxtime = time_control.get_next()
+                if exec_nxtime is None:
+                    exec_nxtime = time_control.get_next()
+                    exec_dttime = datetime.fromtimestamp(exec_nxtime)
+                    logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
                 # 当当前时间大于等于预计算的下次执行时间则立即提交任务给hub
                 if time.time() >= exec_nxtime:
                     exec_dttime = datetime.fromtimestamp(exec_nxtime)
-                    mesg = f'{self.container.service.name}:{tid} next run at {exec_dttime}'
-                    logger.debug(mesg)
+                    logger.debug(f'{self.container.service.name}:{tid} next run at {exec_dttime}')
                     extension.handle_request()
                     while time.time() >= exec_nxtime: exec_nxtime = time_control.get_next()
                 else:

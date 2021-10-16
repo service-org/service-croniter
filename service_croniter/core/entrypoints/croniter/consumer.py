@@ -30,6 +30,7 @@ class CronConsumer(Entrypoint):
     def __init__(
             self,
             expr_format: t.Text,
+            timezone: t.Optional[t.Text] = 'Asia/Shanghai',
             crontab_options: t.Dict[t.Dict[t.Text, t.Any]] = None,
             **kwargs: t.Any
     ) -> None:
@@ -38,6 +39,7 @@ class CronConsumer(Entrypoint):
         @param expr_format: 时间表达式
         @param crontab_options: 计划配置
         """
+        self.timezone = timezone
         kwargs.setdefault('exec_timing', None)
         super(CronConsumer, self).__init__(**kwargs)
         self.expr_format = expr_format
