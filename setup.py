@@ -26,5 +26,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.9',
     ],
-    install_requires=['service-core', 'croniter==1.0.15']
+    install_requires=[
+        'service-core', 'croniter==1.0.15', 'pytz==2021.3'
+    ]
 )
